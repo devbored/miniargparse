@@ -11,6 +11,7 @@ find_package(Threads)
 include_directories(${CMAKE_SOURCE_DIR})
 
 add_compile_options(-Wall)
+add_compile_options(-pedantic)
 
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
 
