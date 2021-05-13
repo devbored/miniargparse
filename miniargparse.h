@@ -40,15 +40,17 @@ static const char *g_miniargparseErrStrs[] = {
 // Global ptr to head of options
 static miniargparseOpt *g_miniargparseHead;
 
-#define MINIARGPARSE_OPT(storeVal, shortName, longName, hasValue, description)                          \
-    assert(!SUBSTR_MATCH("-", shortName) &&                                                             \
+#define MINIARGPARSE_OPT(storeVal, sName, lName, hasVal, desc)                                          \
+    assert(!STR_MATCH("-", sName) &&                                                                    \
         "[miniargparse]: ERROR - The '-' character is not permitted as a shortName");                   \
-    assert(strlen(shortName) == 1 &&                                                                    \
+    assert(!(strlen(sName) > 1) &&                                                                      \
         "[miniargparse]: ERROR - The shortName string can only have 1 character");                      \
-    assert(!STR_MATCH("", shortName) && !STR_MATCH("", longName) &&                                     \
+    assert(!((strlen(lName) == 0) && (strlen(sName)) == 0) &&                                           \
         "[miniargparse]: ERROR - Both shortName and longName are empty");                               \
     miniargparseOpt storeVal =                                                                          \
-        { "-" shortName, "--" longName, description, "", "", 0, { hasValue, 0, 0 }, NULL };             \
+        { "-" sName, "--" lName, desc, "", "", 0, { hasVal, 0, 0 }, NULL };                             \
+    if (strcmp(storeVal.shortName, "-") == 0) { storeVal.shortName = ""; }                              \
+    if (strcmp(storeVal.longName, "--") == 0) { storeVal.longName = ""; }                               \
     do {                                                                                                \
         if (g_miniargparseHead == NULL) {                                                               \
             g_miniargparseHead = &storeVal;                                                             \
@@ -86,7 +88,7 @@ static int miniargparseParse(int argc, char *argv[]) {
                 tmp->index = i;
                 validOpt = 1;
             }
-            if (tmp->infoBits.used && tmp->infoBits.hasValue) {
+            if (tmp->infoBits.used && tmp->infoBits.hasValue && validOpt) {
                 if (isLongOpt) {
                     char *val;
                     size_t offset;
@@ -113,11 +115,11 @@ static int miniargparseParse(int argc, char *argv[]) {
                     }
                     else {
                         tmp->value = argv[i+1];
+                        ++i;
                     }
-                    ++i;
                 }
-                break;
             }
+            if (tmp->infoBits.used && validOpt) { break; }
             tmp = tmp->next;
         }
 
