@@ -8,6 +8,7 @@ typedef struct MiniargparseInfoBits {
     unsigned int hasValue   : 1;
     unsigned int hasErr     : 1;
     unsigned int used       : 1;
+    unsigned int duplicate  : 1;
 } miniargparseInfoBits;
 
 typedef struct MiniargparseOpt {
@@ -78,11 +79,13 @@ static int miniargparseParse(int argc, char *argv[]) {
         // Look for opt in opts list
         while (tmp != NULL) {
             if (STR_USED(tmp->shortName) && STR_MATCH(tmp->shortName, argv[i])) {
+                if (tmp->infoBits.used) { tmp->infoBits.duplicate = 1; }
                 tmp->infoBits.used = 1;
                 tmp->index = i;
                 validOpt = 1;
             }
             else if (STR_USED(tmp->longName) && SUBSTR_MATCH(argv[i], tmp->longName)) {
+                if (tmp->infoBits.used) { tmp->infoBits.duplicate = 1; }
                 isLongOpt = 1;
                 tmp->infoBits.used = 1;
                 tmp->index = i;
@@ -129,7 +132,7 @@ static int miniargparseParse(int argc, char *argv[]) {
     return firstUnknownOpt;
 }
 
-int miniargparseGetPositionalArg(int argc, char *argv[], size_t argvOffset) {
+static int miniargparseGetPositionalArg(int argc, char *argv[], size_t argvOffset) {
     size_t i;
     for (i=argvOffset+1; i<argc; ++i) {
         // Skip if opt-type value

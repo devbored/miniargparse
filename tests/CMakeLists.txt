@@ -15,5 +15,6 @@ add_compile_options(-pedantic)
 
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
 
-add_executable(miniargparse_tests test_basic.cpp)
+file(GLOB SRCS *.cpp)
+add_executable(miniargparse_tests ${SRCS})
 target_link_libraries(miniargparse_tests ${GTEST} ${GTEST_MAIN} ${CMAKE_THREAD_LIBS_INIT})

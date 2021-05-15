@@ -11,11 +11,11 @@
 TEST(miniargparse, test_valid_opts_basic) {
     // Mock argv and argc
     char *argv[] = {
-        "<EXECUTABLE>",
-        "-h",
-        "--verbose",
-        "-d",
-        "6",
+        (char*)"<EXECUTABLE>",
+        (char*)"-h",
+        (char*)"--verbose",
+        (char*)"-d",
+        (char*)"6",
     };
     int argc = sizeof(argv) / sizeof(char*);
 
