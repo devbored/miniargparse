@@ -21,7 +21,7 @@ If GoogleTest libs are already installed in a default system location
 
 If GoogleTest libs are already installed in a non-default system location
 
-    $ cmake -DGTEST_BASEDIR=<path_to_gtest_libs> . -Bbuild
+    $ cmake -DGTEST_BASEDIR=<path_up_to_gtest_libs> . -Bbuild
     $ cmake --build build
 
 ## Conan

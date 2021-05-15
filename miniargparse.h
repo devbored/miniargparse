@@ -36,14 +36,16 @@ typedef struct MiniargparseOptlistItem {
 
 // Global error strings
 enum miniargparseErrIndexes {
-    ERR_MALFORMED_OPT_VAL,
-    ERR_OPT_VAL_END_ARGV,
-    ERR_VAL_IS_OPT
+    MINIARGPARSE_ERR_MALFORMED_OPT_VAL,
+    MINIARGPARSE_ERR_OPT_VAL_END_ARGV,
+    MINIARGPARSE_ERR_VAL_IS_OPT,
+    MINIARGPARSE_ERR_NON_VAL_OPT_VAL
 };
 static const char *g_miniargparseErrStrs[] = {
     "Malformed --<option>=<value>",
-    "Option already at end of argv",
-    "Value has option syntax (i.e. -, --)"
+    "Option already at end of argv - expected value",
+    "Value has option syntax (i.e. -, --)",
+    "Value given on a non-value opt"
 };
 
 static miniargparseOpt *miniargparseOptlistController(miniargparseOptlistItem *option) {
@@ -107,6 +109,11 @@ static int miniargparseParse(int argc, char *argv[]) {
                 char *val = strchr(argv[i], '=');
                 size_t offset = (int)(val - argv[i]);
                 if (STR_USED(tmp->longName) && STR_N_MATCH(argv[i], tmp->longName, offset)) {
+                    if (!tmp->infoBits.hasValue) {
+                        tmp->infoBits.hasErr = 1;
+                        tmp->errValMsg = g_miniargparseErrStrs[MINIARGPARSE_ERR_NON_VAL_OPT_VAL];
+                        tmp->value = argv[i];
+                    }
                     if (tmp->infoBits.used) { tmp->infoBits.duplicate = 1; }
                     isLongOpt = 1;
                     tmp->infoBits.used = 1;
@@ -121,7 +128,7 @@ static int miniargparseParse(int argc, char *argv[]) {
                     val = strchr(argv[i], '=');
                     if (val == NULL) {
                         tmp->infoBits.hasErr = 1;
-                        tmp->errValMsg = g_miniargparseErrStrs[ERR_MALFORMED_OPT_VAL];
+                        tmp->errValMsg = g_miniargparseErrStrs[MINIARGPARSE_ERR_MALFORMED_OPT_VAL];
                         tmp->value = argv[i];
                     }
                     else {
@@ -132,11 +139,11 @@ static int miniargparseParse(int argc, char *argv[]) {
                 else {
                     if ((i+1) >= argc) {
                         tmp->infoBits.hasErr = 1;
-                        tmp->errValMsg = g_miniargparseErrStrs[ERR_OPT_VAL_END_ARGV];
+                        tmp->errValMsg = g_miniargparseErrStrs[MINIARGPARSE_ERR_OPT_VAL_END_ARGV];
                     }
                     else if (argv[i+1][0] == '-') {
                         tmp->infoBits.hasErr = 1;
-                        tmp->errValMsg = g_miniargparseErrStrs[ERR_VAL_IS_OPT];
+                        tmp->errValMsg = g_miniargparseErrStrs[MINIARGPARSE_ERR_VAL_IS_OPT];
                         tmp->value = argv[i+1];
                     }
                     else {
