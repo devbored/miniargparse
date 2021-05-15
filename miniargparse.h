@@ -28,8 +28,8 @@ typedef struct MiniargparseOptlistItem {
 } miniargparseOptlistItem;
 
 #define STR_MATCH(str1, str2) (strcmp(str1, str2) == 0)
-#define SUBSTR_MATCH(str1, str2) (strstr(str1, str2) != NULL)
-#define STR_USED(val) (!(val == NULL) && !(strcmp(val, "") == 0))
+#define STR_N_MATCH(str1, str2, n) (strncmp(str1, str2, n) == 0)
+#define STR_USED(val) (!(val == NULL) && !(STR_MATCH(val, "")))
 
 #define APPEND_OPT 0
 #define HEAD_OPT 1
@@ -96,12 +96,23 @@ static int miniargparseParse(int argc, char *argv[]) {
                 tmp->index = i;
                 validOpt = 1;
             }
-            else if (STR_USED(tmp->longName) && SUBSTR_MATCH(argv[i], tmp->longName)) {
+            else if (STR_USED(tmp->longName) && !tmp->infoBits.hasValue && STR_MATCH(argv[i], tmp->longName)) {
                 if (tmp->infoBits.used) { tmp->infoBits.duplicate = 1; }
                 isLongOpt = 1;
                 tmp->infoBits.used = 1;
                 tmp->index = i;
                 validOpt = 1;
+            }
+            else {
+                char *val = strchr(argv[i], '=');
+                size_t offset = (int)(val - argv[i]);
+                if (STR_USED(tmp->longName) && STR_N_MATCH(argv[i], tmp->longName, offset)) {
+                    if (tmp->infoBits.used) { tmp->infoBits.duplicate = 1; }
+                    isLongOpt = 1;
+                    tmp->infoBits.used = 1;
+                    tmp->index = i;
+                    validOpt = 1;
+                }
             }
             if (tmp->infoBits.used && tmp->infoBits.hasValue && validOpt) {
                 if (isLongOpt) {

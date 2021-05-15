@@ -114,7 +114,7 @@ TEST(miniargparse, test_opt_val_malformed_long) {
         (char*)"-d",
         (char*)"9",
         (char*)"-h",
-        (char*)"--data28"
+        (char*)"--data2"
     };
     int argc = sizeof(argv) / sizeof(char*);
 
