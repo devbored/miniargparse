@@ -22,9 +22,17 @@ typedef struct MiniargparseOpt {
     struct MiniargparseOpt *next;
 } miniargparseOpt;
 
+typedef struct MiniargparseOptlistItem {
+    unsigned int makeHeadNode;
+    miniargparseOpt *opt;
+} miniargparseOptlistItem;
+
 #define STR_MATCH(str1, str2) (strcmp(str1, str2) == 0)
 #define SUBSTR_MATCH(str1, str2) (strstr(str1, str2) != NULL)
 #define STR_USED(val) (!(val == NULL) && !(strcmp(val, "") == 0))
+
+#define APPEND_OPT 0
+#define HEAD_OPT 1
 
 // Global error strings
 enum miniargparseErrIndexes {
@@ -38,43 +46,47 @@ static const char *g_miniargparseErrStrs[] = {
     "Value has option syntax (i.e. -, --)"
 };
 
-// Global ptr to head of options
-static miniargparseOpt *g_miniargparseHead;
+static miniargparseOpt *miniargparseOptlistController(miniargparseOptlistItem *option) {
+    static miniargparseOpt *miniargparse_HEAD = NULL;
+    if (option == NULL) {
+        return miniargparse_HEAD;
+    }
+    else {
+        if (miniargparse_HEAD == NULL || option->makeHeadNode == HEAD_OPT) {
+            miniargparse_HEAD = option->opt;
+            return NULL;
+        }
+        miniargparseOpt *tmp = miniargparse_HEAD;
+        while (tmp->next != NULL) tmp = tmp->next;
+        tmp->next = option->opt;
+        return NULL;
+    }
+}
 
 #define MINIARGPARSE_OPT(storeVal, sName, lName, hasVal, desc)                                          \
     assert(!STR_MATCH("-", sName) &&                                                                    \
         "[miniargparse]: ERROR - The '-' character is not permitted as a shortName");                   \
     assert(!(strlen(sName) > 1) &&                                                                      \
         "[miniargparse]: ERROR - The shortName string can only have 1 character");                      \
-    assert(!((strlen(lName) == 0) && (strlen(sName)) == 0) &&                                           \
-        "[miniargparse]: ERROR - Both shortName and longName are empty");                               \
     miniargparseOpt storeVal =                                                                          \
         { "-" sName, "--" lName, desc, "", "", 0, { hasVal, 0, 0 }, NULL };                             \
     if (strcmp(storeVal.shortName, "-") == 0) { storeVal.shortName = ""; }                              \
     if (strcmp(storeVal.longName, "--") == 0) { storeVal.longName = ""; }                               \
     do {                                                                                                \
-        if (g_miniargparseHead == NULL) {                                                               \
-            g_miniargparseHead = &storeVal;                                                             \
-        }                                                                                               \
-        else {                                                                                          \
-            miniargparseOpt *tmp = g_miniargparseHead;                                                  \
-            while (tmp->next != NULL) {                                                                 \
-                tmp = tmp->next;                                                                        \
-            }                                                                                           \
-            tmp->next = &storeVal;                                                                      \
-        }                                                                                               \
+        miniargparseOptlistItem opt = { APPEND_OPT, &storeVal };                                        \
+        miniargparseOptlistController(&opt);                                                            \
     } while(0)
 
+// Parse argv for opts and return argv index on first-found unknown option (returns 0 if no unknown opts)
 static int miniargparseParse(int argc, char *argv[]) {
-    miniargparseOpt *tmp;
     int firstUnknownOpt = 0;
-    for (size_t i=1; i<argc; ++i) {
+    for (int i=1; i<argc; ++i) {
         // Check if arg is not a option-type
         if (argv[i][0] != '-') { continue; }
 
         int isLongOpt = 0;
         int validOpt = 0;
-        tmp = g_miniargparseHead;
+        miniargparseOpt *tmp = miniargparseOptlistController(NULL);
 
         // Look for opt in opts list
         while (tmp != NULL) {
@@ -134,13 +146,13 @@ static int miniargparseParse(int argc, char *argv[]) {
 
 static int miniargparseGetPositionalArg(int argc, char *argv[], size_t argvOffset) {
     size_t i;
-    for (i=argvOffset+1; i<argc; ++i) {
+    for (i=argvOffset+1; i<(unsigned)argc; ++i) {
         // Skip if opt-type value
         if (argv[i][0] == '-') { continue; }
 
         // Otherwise check if arg is opt-value type or not
         int isOptValue = 0;
-        miniargparseOpt *tmp = g_miniargparseHead;
+        miniargparseOpt *tmp = miniargparseOptlistController(NULL);
         while (tmp != NULL) {
             if (tmp->infoBits.used && tmp->infoBits.hasValue && tmp->index == i-1) {
                 isOptValue = 1;

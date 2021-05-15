@@ -7,6 +7,9 @@ A simple C/C++ argument parsing utility.
 - Implemented as a single C/C++ header file
 - Cross platform (Windows, macOS, Linux)
 
+## Thread Safety
+One important note to keep in mind is that miniargparse is **not thread safe**.
+
 ## Building unit tests
 [GoogleTest](https://github.com/google/googletest) is used as the unit testing framework. There are
 a couple of different ways to build the tests:
