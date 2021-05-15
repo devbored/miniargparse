@@ -3,7 +3,7 @@
 #include <gtest/gtest.h>
 #include "miniargparse.h"
 
-miniargparseOptlistItem g_clearOptlist = {HEAD_OPT, NULL};
+static miniargparseOptlistItem g_clearOptlist = {HEAD_OPT, NULL};
 
 TEST(miniargparse, test_duplicate_opts) {
     // Mock argv and argc
@@ -25,7 +25,7 @@ TEST(miniargparse, test_duplicate_opts) {
     EXPECT_EQ(unknownOpt, 0);
 
     // Check if duplicate was found
-    EXPECT_EQ(data.infoBits.duplicate, 1);
+    EXPECT_EQ(data.infoBits.duplicate, 1U);
 
     // Cleanup HEAD node
     miniargparseOptlistController(&g_clearOptlist);
@@ -49,7 +49,7 @@ TEST(miniargparse, test_val_opt_end_argv) {
     EXPECT_EQ(unknownOpt, 0);
 
     // Check if error was caught
-    EXPECT_EQ(data.infoBits.hasErr, 1);
+    EXPECT_EQ(data.infoBits.hasErr, 1U);
     EXPECT_TRUE(STR_MATCH(data.errValMsg, g_miniargparseErrStrs[ERR_OPT_VAL_END_ARGV]));
 
     // Cleanup HEAD node
@@ -99,7 +99,7 @@ TEST(miniargparse, test_opt_val_err) {
     EXPECT_EQ(unknownOpt, 0);
 
     // Check if error was caught
-    EXPECT_EQ(data.infoBits.hasErr, 1);
+    EXPECT_EQ(data.infoBits.hasErr, 1U);
     EXPECT_TRUE(STR_MATCH(data.errValMsg, g_miniargparseErrStrs[ERR_VAL_IS_OPT]));
 
     // Cleanup HEAD node
@@ -127,7 +127,7 @@ TEST(miniargparse, test_opt_val_malformed_long) {
     EXPECT_EQ(unknownOpt, 0);
 
     // Check if error was caught
-    EXPECT_EQ(data2.infoBits.hasErr, 1);
+    EXPECT_EQ(data2.infoBits.hasErr, 1U);
     EXPECT_TRUE(STR_MATCH(data2.errValMsg, g_miniargparseErrStrs[ERR_MALFORMED_OPT_VAL]));
 
     // Cleanup HEAD node
