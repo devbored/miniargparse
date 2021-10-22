@@ -1,6 +1,7 @@
 #ifndef MINIARGPARSE_H
 #define MINIARGPARSE_H
 
+#include <stdio.h>
 #include <string.h>
 #include <assert.h>
 
@@ -182,6 +183,49 @@ static int miniargparseGetPositionalArg(int argc, char *argv[], size_t argvOffse
         if (!isOptValue) { return i; }
     }
     return 0;
+}
+
+static void miniargparsePrint(void) {
+    miniargparseOpt *tmp = miniargparseOptlistController(NULL);
+    while (tmp != NULL) {
+        if (tmp->infoBits.hasValue) {
+            if (STR_USED(tmp->shortName) && STR_USED(tmp->longName)) {
+                printf("  %s <value>, %s=<value>\n", tmp->shortName, tmp->longName);
+            }
+            else if (STR_USED(tmp->shortName)) {
+                printf("  %s <value>\n", tmp->shortName);
+            }
+            else if (STR_USED(tmp->longName)) {
+                printf("  %s <value>\n", tmp->longName);
+            }
+            else {
+                tmp = tmp->next;
+                continue;
+            }
+
+            if (STR_USED(tmp->description))
+            printf("        %s\n\n", tmp->description);
+        }
+        else {
+            if (STR_USED(tmp->shortName) && STR_USED(tmp->longName)) {
+                printf("  %s, %s\n", tmp->shortName, tmp->longName);
+            }
+            else if (STR_USED(tmp->shortName)) {
+                printf("  %s\n", tmp->shortName);
+            }
+            else if (STR_USED(tmp->longName)) {
+                printf("  %s\n", tmp->longName);
+            }
+            else {
+                tmp = tmp->next;
+                continue;
+            }
+
+            if (STR_USED(tmp->description))
+            printf("        %s\n\n", tmp->description);
+        }
+        tmp = tmp->next;
+    }
 }
 
 #endif // MINIARGPARSE_H
