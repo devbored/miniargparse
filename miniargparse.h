@@ -203,8 +203,9 @@ static void miniargparsePrint(void) {
                 continue;
             }
 
-            if (STR_USED(tmp->description))
-            printf("        %s\n\n", tmp->description);
+            if (STR_USED(tmp->description)) {
+                printf("        %s\n\n", tmp->description);
+            }
         }
         else {
             if (STR_USED(tmp->shortName) && STR_USED(tmp->longName)) {
@@ -221,8 +222,9 @@ static void miniargparsePrint(void) {
                 continue;
             }
 
-            if (STR_USED(tmp->description))
-            printf("        %s\n\n", tmp->description);
+            if (STR_USED(tmp->description)) {
+                printf("        %s\n\n", tmp->description);
+            }
         }
         tmp = tmp->next;
     }
