@@ -10,6 +10,7 @@ typedef struct MiniargparseInfoBits {
     unsigned int hasErr     : 1;
     unsigned int used       : 1;
     unsigned int duplicate  : 1;
+    unsigned int longOpt    : 1;
 } miniargparseInfoBits;
 
 typedef struct MiniargparseOpt {
@@ -136,6 +137,7 @@ static int miniargparseParse(int argc, char *argv[]) {
                         offset = (int)(val - argv[i]);
                         tmp->value = &argv[i][offset+1];
                     }
+                    tmp->infoBits.longOpt = 1;
                 }
                 else {
                     if ((i+1) >= argc) {
@@ -173,7 +175,7 @@ static int miniargparseGetPositionalArg(int argc, char *argv[], size_t argvOffse
         int isOptValue = 0;
         miniargparseOpt *tmp = miniargparseOptlistController(NULL);
         while (tmp != NULL) {
-            if (tmp->infoBits.used && tmp->infoBits.hasValue && tmp->index == i-1) {
+            if (tmp->infoBits.used && tmp->infoBits.hasValue && (tmp->index == i-1 && !tmp->infoBits.longOpt)) {
                 isOptValue = 1;
             }
             tmp = tmp->next;
